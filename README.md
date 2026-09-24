@@ -51,19 +51,20 @@ Ghostty switches live when the system appearance changes.
 
 By default, macOS tints window backgrounds with a blur of your wallpaper, so Finder's gray drifts with the desktop and with whatever window sits behind it. Xcode's editor is opaque and never drifts, so the two can only agree by accident.
 
-Turn off **System Settings > Appearance > Allow wallpaper tinting in windows**. This is separate from Reduce transparency: the Dock, menu bar, and sidebars keep their glass, but window surfaces settle on fixed grays that no longer follow the wallpaper. With that off, in dark mode on macOS 26, the surfaces measure like this in sRGB:
+Turn off **System Settings > Appearance > Allow wallpaper tinting in windows**. This is separate from Reduce transparency: the Dock, menu bar, and sidebars keep their glass, but window surfaces settle on fixed grays that no longer follow the wallpaper. With that off, on macOS 26, the surfaces measure like this in sRGB:
 
-| Surface | Color |
-|---|---|
-| Xcode editor, and this theme | `#262626` |
-| Finder sidebar | `#262626` |
-| Xcode navigator and inspector | `#292929` |
-| Finder toolbar and status bar | `#2a2a2a` |
-| Finder file area (icon, column, and list view) | `#1e1e1e` |
+| Surface | Dark | Light |
+|---|---|---|
+| Xcode editor, and this theme | `#262626` | `#ffffff` |
+| Finder sidebar | `#262626` | `#ededed` |
+| Xcode navigator and inspector | `#292929` | `#ededed` |
+| Finder toolbar and status bar | `#2a2a2a` | `#ffffff` |
+| Finder file area, icon and column view | `#1e1e1e` | `#ffffff` |
+| Finder list view rows, alternating | `#1e1e1e` and `#292929` | `#ffffff` and `#f4f5f5` |
 
-So the theme lands on the same gray as Xcode's editor and Finder's sidebar, and the surrounding chrome in both apps sits within a few levels of each other.
+In light mode everything lines up: the editor and Finder's file area are both white, and Xcode's panels are the same `#ededed` as Finder's sidebar.
 
-Finder's file area is darker on purpose. It uses Apple's dark-mode content background color, a fixed semantic color rather than a material, so no wallpaper or appearance setting moves it. This theme follows the window gray instead, because that is what Xcode's editor uses and what you look at all day. The gap between a Finder window's file list and an editor next to it is a consistent 8 levels, which reads as a normal inset rather than a mismatch.
+In dark mode the theme lands on the same gray as Xcode's editor and Finder's sidebar, and the surrounding chrome in both apps sits within a few levels of each other. Finder's file area is darker on purpose. It uses Apple's dark-mode content background color, a fixed semantic color rather than a material, so no wallpaper or appearance setting moves it. This theme follows the window gray instead, because that is what Xcode's editor uses and what you look at all day. The gap between a Finder window's file list and an editor next to it is a consistent 8 levels, which reads as a normal inset rather than a mismatch.
 
 ## Provenance
 
