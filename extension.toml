@@ -3,5 +3,5 @@ name = "Xcode System Theme"
 version = "0.1.0"
 schema_version = 1
 authors = ["Dylan Vann <dylan@dylanvann.com>"]
-description = "Xcode 27's default Standard theme in light and dark, so Zed matches Xcode and the rest of your macOS windows"
+description = "Xcode 27's default colors, read from Xcode itself, so Zed matches Xcode and the rest of macOS. Best with SF Mono and the Xcode-like Swift highlights (see README)."
 repository = "https://github.com/DylanVann/xcode-system-theme"
