@@ -6,6 +6,7 @@
 #   tools/hero/hero.sh setup       open and size the four windows on tools/hero/Landmarks
 #   tools/hero/hero.sh capture     composite the shots from whatever is open (a few seconds)
 #   tools/hero/hero.sh ghostty     reopen only the Ghostty demo window
+#   tools/hero/hero.sh finder      reopen only the Finder window
 #   tools/hero/hero.sh wallpaper   recapture tools/hero/wallpaper-{light,dark}.jpg; rarely needed
 #   tools/hero/hero.sh             setup then capture
 #
@@ -174,7 +175,8 @@ case "${1:-all}" in
   setup) setup ;;
   capture) capture ;;
   ghostty) ghostty_window ;;
+  finder) finder_window ;;
   wallpaper) wallpaper ;;
   all) setup; capture; defaults write com.apple.finder AppleShowAllFiles -bool true; killall Finder ;;
-  *) echo "usage: $0 [setup|capture|ghostty|wallpaper]"; exit 1 ;;
+  *) echo "usage: $0 [setup|capture|ghostty|finder|wallpaper]"; exit 1 ;;
 esac

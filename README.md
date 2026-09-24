@@ -102,7 +102,7 @@ Turn off **System Settings > Appearance > Allow wallpaper tinting in windows**. 
 
 ## Provenance
 
-Syntax colors are read from Xcode's editor through the accessibility API, with `tools/axcolors.swift` and a probe file that exercises every syntax role. Surfaces are measured from screen captures converted to sRGB. `tools/build.py` generates the theme files, and [MAPPING.md](MAPPING.md) traces every value to its source. The scripts in `tools/` regenerate all screenshots.
+Syntax colors are read from Xcode's editor through the accessibility API, with `tools/axcolors.swift` and a probe file that exercises every syntax role. Surfaces are measured from screen captures converted to sRGB. Those are exact. Hover, active, and border shades have no Xcode equivalent and are chosen offsets from the measured surfaces. `tools/build.py` generates the theme files, and [MAPPING.md](MAPPING.md) traces every value to its source. The scripts in `tools/` regenerate all screenshots.
 
 ## License
 
