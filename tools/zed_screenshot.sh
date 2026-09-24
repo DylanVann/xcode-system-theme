@@ -23,6 +23,8 @@ open(p,"w").write(s[:i+1]+'\n  "git": { "inline_blame": { "enabled": false } },'
 PY
   trap 'cp /tmp/zedshot-settings.json "$ZED_SETTINGS"' EXIT
 fi
+# Close any existing windows on this repo first, so exactly one window is targeted.
+osascript -e "$SE to tell process \"zed\" to click (first button whose subrole is \"AXCloseButton\") of (every window whose name contains \"xcode-system-theme\")" >/dev/null 2>&1 || true; sleep 1
 $CLI --new "$S" >/dev/null 2>&1; sleep 6
 win() { /tmp/winlist | awk -F'|' '$2 ~ /Zed/ && $3 ~ /xcode-system-theme/ && $5+0 == 0 {print; exit}'; }
 osascript -e "$SE to set frontmost of process \"zed\" to true"; sleep 0.5
