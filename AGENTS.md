@@ -73,6 +73,9 @@ Hard-won facts about how these themes are built and verified. Read before touchi
 - `screencapture` omits the mouse pointer unless `-C` is passed, so the shots never include it. Do not add `-C`.
 - Close leftover demo windows first: Ghostty via the AX close button on windows whose name contains "Landmarks", Finder via `close every Finder window`.
 
+- `tools/hero/before.sh` makes the "before" shot: the same windows cascaded, Zed on One Dark, Ghostty on its built-in palette, bat on Monokai. It edits the Zed settings and Ghostty config and restores them on exit. `hero.sh cascade` renders the same layout with the theme on. Window positions on screen never change; only the composite positions do, which is why captures can cascade while the screen stays a grid.
+- Xcode's navigator can end up on a tab other than Project, and View > Navigators > Project through the menu bar did not switch it back; clicking the folder tab at the top of the navigator did (`click at {44, 123}` for the window at the grid position).
+
 ## Things that cannot be matched and are documented as such
 
 - `#Preview` and other macro expressions have no grammar node in tree-sitter-swift.

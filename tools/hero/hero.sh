@@ -7,6 +7,7 @@
 #   tools/hero/hero.sh capture     composite the shots from whatever is open (a few seconds)
 #   tools/hero/hero.sh ghostty     reopen only the Ghostty demo window
 #   tools/hero/hero.sh finder      reopen only the Finder window
+#   tools/hero/hero.sh cascade     the overlapping layout of before.sh with the theme on, to screenshots/cascade-dark.png
 #   tools/hero/hero.sh xcode       reopen only the Xcode window
 #   tools/hero/hero.sh wallpaper   recapture tools/hero/wallpaper-{light,dark}.jpg; rarely needed
 #   tools/hero/hero.sh             setup then capture
@@ -28,6 +29,11 @@ SE='tell application "System Events"'
 # Window size in points, and the grid in points on the canvas, which is the screen
 # below the 39 pt menu bar. Screen bounds for setup are the canvas bounds plus 39.
 W=992; H=609; X0=24; X1=1040; Y0=24; Y1=657
+# Canvas positions per window, in the order Xcode, Zed, Finder, Ghostty. The grid by
+# default; before.sh overrides them with a cascade. Later windows are pasted on top.
+XS=($X0 $X1 $X0 $X1); YS=($Y0 $Y0 $Y1 $Y1)
+PASTE_ORDER=(0 1 2 3)
+OUT_PREFIX=hero
 WL=/tmp/winlist
 [ "$WL" -nt "$S/tools/winlist.swift" ] || swiftc -O "$S/tools/winlist.swift" -o "$WL" 2>/dev/null
 WM=/tmp/warpmouse
@@ -114,7 +120,7 @@ capture_mode() {
   # has no rendered backdrop and captures as dither noise. Only the terminal should look
   # active, so the apps are activated in a rotation that leaves each of the others raised
   # but inactive at its capture, and the Ghostty demo window is made key last.
-  local apps=(Xcode Zed Finder Ghostty) xs=($X0 $X1 $X0 $X1) ys=($Y0 $Y0 $Y1 $Y1) k line ids=()
+  local apps=(Xcode Zed Finder Ghostty) xs=("${XS[@]}") ys=("${YS[@]}") k line ids=()
   for k in 0 1 2 3; do
     line=$(win "${apps[$k]}" Landmarks); [ -n "$line" ] || { echo "no ${apps[$k]} window named Landmarks"; exit 1; }
     ids+=( "$(echo "$line" | cut -d'|' -f1 | tr -d ' ')" )
@@ -131,15 +137,15 @@ capture_mode() {
   # The shadow is wider for the active window than for an inactive one (112 by 76 px
   # versus 46 by 32 at 2x), so measure each capture's opaque box instead of assuming.
   local args=() box ox oy
-  for k in 0 1 2 3; do
+  for k in "${PASTE_ORDER[@]}"; do
     box=$(magick "$T/w$k.png" -alpha extract -threshold 99% -format "%@" info: 2>/dev/null)
     ox=$(echo "$box" | sed -E 's/.*\+([0-9]+)\+([0-9]+)$/\1/'); oy=$(echo "$box" | sed -E 's/.*\+([0-9]+)\+([0-9]+)$/\2/')
     args+=( "$T/w$k.png" -geometry "+$(( xs[k] * 2 - ox ))+$(( ys[k] * 2 - oy ))" -composite )
   done
-  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -define png:compression-level=9 "$OUT/hero-$mode@2x.png" 2>/dev/null
-    sips -s dpiWidth 144 -s dpiHeight 144 "$OUT/hero-$mode@2x.png" >/dev/null
-    magick "$OUT/hero-$mode@2x.png" -resize 50% -define png:compression-level=9 "$OUT/hero-$mode.png" 2>/dev/null
-    rm -rf "$T"; echo "wrote $OUT/hero-$mode@2x.png and $OUT/hero-$mode.png" ) &
+  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -define png:compression-level=9 "$OUT/$OUT_PREFIX-$mode@2x.png" 2>/dev/null
+    sips -s dpiWidth 144 -s dpiHeight 144 "$OUT/$OUT_PREFIX-$mode@2x.png" >/dev/null
+    magick "$OUT/$OUT_PREFIX-$mode@2x.png" -resize 50% -define png:compression-level=9 "$OUT/$OUT_PREFIX-$mode.png" 2>/dev/null
+    rm -rf "$T"; echo "wrote $OUT/$OUT_PREFIX-$mode@2x.png and $OUT/$OUT_PREFIX-$mode.png" ) &
 }
 
 ZED_SETTINGS=$HOME/.config/zed/settings.json
@@ -156,18 +162,26 @@ PY
   sleep 3
 }
 
+# Finder shows dotfiles if the user has that on; hide them for the shot and put it back.
+SHOW_ALL=$(defaults read com.apple.finder AppleShowAllFiles 2>/dev/null || echo 0)
+dotfiles_hide() {
+  if [ "$SHOW_ALL" = 1 ] || [ "$SHOW_ALL" = true ]; then
+    defaults write com.apple.finder AppleShowAllFiles -bool false; killall Finder; sleep 2; finder_window
+  fi
+}
+dotfiles_restore() {
+  if [ "$SHOW_ALL" = 1 ] || [ "$SHOW_ALL" = true ]; then defaults write com.apple.finder AppleShowAllFiles -bool true; killall Finder; fi
+}
+
 capture() {
   mkdir -p "$OUT"
   blame_off
-  local show_all; show_all=$(defaults read com.apple.finder AppleShowAllFiles 2>/dev/null || echo 0)
-  if [ "$show_all" = 1 ] || [ "$show_all" = true ]; then
-    defaults write com.apple.finder AppleShowAllFiles -bool false; killall Finder; sleep 2; finder_window
-  fi
+  dotfiles_hide
   local was_dark=false; is_dark && was_dark=true
   if [ "$was_dark" = true ]; then capture_mode dark true; capture_mode light false; else capture_mode light false; capture_mode dark true; fi
   osascript -e "$SE to tell appearance preferences to set dark mode to $was_dark"
   wait
-  if [ "$show_all" = 1 ] || [ "$show_all" = true ]; then defaults write com.apple.finder AppleShowAllFiles -bool true; killall Finder; fi
+  dotfiles_restore
 }
 
 wallpaper() {
@@ -184,13 +198,21 @@ wallpaper() {
   osascript -e "$SE to tell appearance preferences to set dark mode to $was_dark"
 }
 
+# Only dispatch when run directly; before.sh sources this file for its functions.
+[ "${BASH_SOURCE[0]}" = "$0" ] || return 0 2>/dev/null
 case "${1:-all}" in
   setup) setup ;;
   capture) capture ;;
   ghostty) ghostty_window ;;
   finder) finder_window ;;
+  cascade)
+    # The same overlapping layout as before.sh, with the theme on, for a before-and-after pair.
+    XS=(444 620 268 796); YS=(287 393 181 499); PASTE_ORDER=(2 0 1 3); OUT_PREFIX=cascade
+    was_dark=false; is_dark && was_dark=true
+    dotfiles_hide; capture_mode dark true; wait; dotfiles_restore
+    osascript -e "$SE to tell appearance preferences to set dark mode to $was_dark" ;;
   xcode) xcode_window ;;
   wallpaper) wallpaper ;;
   all) setup; capture; defaults write com.apple.finder AppleShowAllFiles -bool true; killall Finder ;;
-  *) echo "usage: $0 [setup|capture|ghostty|finder|xcode|wallpaper]"; exit 1 ;;
+  *) echo "usage: $0 [setup|capture|cascade|ghostty|finder|xcode|wallpaper]"; exit 1 ;;
 esac
