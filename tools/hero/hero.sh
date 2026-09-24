@@ -30,6 +30,8 @@ W=992; H=609; X0=24; X1=1040; Y0=24; Y1=657
 SHADOW_X=23; SHADOW_Y=16
 WL=/tmp/winlist
 [ "$WL" -nt "$S/tools/winlist.swift" ] || swiftc -O "$S/tools/winlist.swift" -o "$WL" 2>/dev/null
+WM=/tmp/warpmouse
+[ "$WM" -nt "$S/tools/warpmouse.swift" ] || swiftc -O "$S/tools/warpmouse.swift" -o "$WM" 2>/dev/null
 win() { $WL | awk -F'|' -v a="$1" -v p="$2" '$2 ~ a && $3 ~ p && $5+0 == 0 {print; exit}'; }
 is_dark() { [ "$(osascript -e "$SE to tell appearance preferences to get dark mode")" = true ]; }
 
@@ -99,6 +101,8 @@ capture_mode() {
   # Each window is raised before its capture. A window that is behind another has no
   # rendered backdrop for its glass toolbar, and captures with dither noise in its place.
   local apps=(Xcode Zed Finder Ghostty) procs=(Xcode zed Finder ghostty) xs=($X0 $X1 $X0 $X1) ys=($Y0 $Y0 $Y1 $Y1) k line id
+  # Park the pointer in the gap between the windows, or a hover effect ends up in the shot.
+  $WM $(( X1 - 8 )) $(( Y1 + 39 - 24 )); sleep 0.5
   local front; front=$(osascript -e "$SE to get name of first process whose frontmost is true")
   for k in 0 1 2 3; do
     line=$(win "${apps[$k]}" Landmarks); [ -n "$line" ] || { echo "no ${apps[$k]} window named Landmarks"; exit 1; }
