@@ -1,28 +1,30 @@
-# Xcode 27 light appearance: the classic "Default (Light)" editor theme, which
-# Xcode 27 still uses in light mode (no workspace theme preset applied).
-# Generated from the .xccolortheme bundled in Xcode.app (DVTUserInterfaceKit):
-# background/foreground/selection are the editor's, and the ANSI slots map
-# red=string, green=function, yellow=number/attribute, blue=declaration,
-# magenta=keyword, cyan=system function (purple), bright black=comment.
+# Xcode 27 light appearance: the Standard workspace theme preset, Xcode 27's
+# default in light mode as in dark. The preset is a procedural recipe (hues and
+# intensities, not stored colors), so syntax colors are the sRGB values Xcode
+# reports for each token through the accessibility API; background, selection,
+# and chrome were measured on screen. ANSI slots: red=string, green=declaration (bright: reference),
+# yellow=preprocessor, blue=link (bright: type declaration), magenta=keyword and
+# attribute (bright: system function and macro), cyan=system type, bright
+# black=comment. Xcode's number color is a saturated blue and has no slot.
 palette = 0=#000000
-palette = 1=#c41a16
-palette = 2=#326d74
-palette = 3=#815f03
-palette = 4=#0f68a0
-palette = 5=#9b2393
-palette = 6=#6c36a9
-palette = 7=#6c6c6c
-palette = 8=#5d6c79
-palette = 9=#c41a16
-palette = 10=#1c464a
-palette = 11=#643820
-palette = 12=#0b4f79
-palette = 13=#aa0d91
-palette = 14=#3900a0
+palette = 1=#ca2c1d
+palette = 2=#006279
+palette = 3=#906918
+palette = 4=#0049c1
+palette = 5=#c4246e
+palette = 6=#9d31cf
+palette = 7=#322529
+palette = 8=#6a7084
+palette = 9=#ca2c1d
+palette = 10=#00695c
+palette = 11=#906918
+palette = 12=#007e9e
+palette = 13=#8b0099
+palette = 14=#9d31cf
 palette = 15=#ffffff
 background = #ffffff
-foreground = #262626
-cursor-color = #000000
+foreground = #322529
+cursor-color = #322529
 cursor-text = #ffffff
-selection-background = #a4cdff
-selection-foreground = #262626
+selection-background = #b3d7ff
+selection-foreground = #322529

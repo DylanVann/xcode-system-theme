@@ -1,25 +1,24 @@
 # Xcode System Theme
 
-Xcode 27's default colors for [Ghostty](https://ghostty.org) and [Zed](https://zed.dev), so your editor, terminal, and Xcode all agree with each other and with the rest of macOS.
+Xcode 27's default colors for [Ghostty](https://ghostty.org), [Zed](https://zed.dev), and [bat](https://github.com/sharkdp/bat), so your editor, terminal, and Xcode all agree with each other and with the rest of macOS.
+
+![Xcode, Zed, Finder, and Ghostty, light](screenshots/hero-light.png)
+
+![Xcode, Zed, Finder, and Ghostty, dark](screenshots/hero-dark.png)
 
 ## Why
 
-In dark mode, Xcode, Finder, your editor, and your terminal each pick a slightly different near-black. Side by side, the mismatch is subtle and it looks bad. This theme gives Ghostty and Zed the exact background Xcode 27 uses, `#262626`, and the same syntax colors, so every window you code in reads as one surface. Light mode gets the same treatment with Xcode's white editor and `#262626` text.
+In dark mode, Xcode, Finder, your editor, and your terminal each pick a slightly different near-black, and side by side the mismatch shows. This theme gives Ghostty and Zed the exact background Xcode 27 uses, `#262626`, and the same syntax colors, so every window you code in reads as one surface. Light mode gets the same treatment with Xcode's white editor and its warm near-black text. Both themes are opaque, so other windows have a stable background to match.
 
-Existing Xcode ports convert the classic `.xccolortheme` files that Xcode has bundled since Xcode 11. Xcode 27 no longer uses those in dark mode. Its dark default is the "Standard" workspace theme preset, a procedural recipe with no exportable file, which is why no other port has it.
-
-## Themes
-
-| Name | Appearance | Source |
-|---|---|---|
-| Xcode System Light | light | Xcode 27's `Default (Light).xccolortheme`, which Xcode 27 still uses in light mode |
-| Xcode System Dark | dark | Xcode 27's "Standard" workspace theme preset, its default in dark mode |
-
-Both are opaque. The point is a stable background that other windows can match.
+Existing Xcode ports convert the classic `.xccolortheme` files that Xcode has bundled since Xcode 11. Xcode 27 no longer draws those. Its default in both appearances is the Standard workspace theme, a procedural recipe of hues and intensities. Xcode can export the recipe but not the colors it produces, which is why no other port has them. This theme reads the resolved colors out of Xcode's running editor instead.
 
 ## Install
 
 ### Zed
+
+![Zed, light](screenshots/zed-light.png)
+
+![Zed, dark](screenshots/zed-dark.png)
 
 Until the extension is in the Zed store, install it as a dev extension:
 
@@ -27,7 +26,7 @@ Until the extension is in the Zed store, install it as a dev extension:
 2. In Zed, open the command palette and run `zed: extensions`.
 3. Click **Install Dev Extension** and pick the repo folder.
 
-Then in `settings.json`:
+Then run `theme selector: toggle` and pick a theme, or set both appearances in `~/.config/zed/settings.json`:
 
 ```json
 "theme": {
@@ -39,42 +38,89 @@ Then in `settings.json`:
 
 ### Ghostty
 
-Copy the two files from `ghostty/` into `~/.config/ghostty/themes/`, then add to your Ghostty config:
+![Ghostty, light](screenshots/ghostty-light.png)
 
+![Ghostty, dark](screenshots/ghostty-dark.png)
+
+Copy the theme files into Ghostty's themes folder:
+
+```sh
+mkdir -p ~/.config/ghostty/themes
+cp ghostty/* ~/.config/ghostty/themes/
 ```
+
+Then in `~/.config/ghostty/config`:
+
+```ini
 theme = light:Xcode System Light,dark:Xcode System Dark
 ```
 
 Ghostty switches live when the system appearance changes.
 
+### bat
+
+`bat` colors code with its own 24-bit themes by default, so a terminal theme never reaches it. `bat/Xcode System.tmTheme` maps syntax roles to palette slots instead, the same way the Ghostty files assign them, so `bat` follows whichever of the two themes the terminal is showing. Copy it into bat's themes folder and rebuild the cache:
+
+```sh
+mkdir -p "$(bat --config-dir)/themes"
+cp "bat/Xcode System.tmTheme" "$(bat --config-dir)/themes/"
+bat cache --build
+```
+
+Then make it the default in `$(bat --config-dir)/config`, usually `~/.config/bat/config`:
+
+```
+--theme="Xcode System"
+```
+
+## Notes
+
+### Font
+
+Xcode 27 uses SF Mono at 13 points with a line height of about 1.4, keywords in Semibold, and doc comments in SF Pro. The theme sets keyword weight to match, which needs a font with a bold face; Zed cannot switch fonts for doc comments. SF Mono ships inside Terminal.app and Xcode, and the Homebrew cask installs it system-wide:
+
+```sh
+brew install --cask font-sf-mono
+```
+
+Zed, in `settings.json`:
+
+```json
+"buffer_font_family": "SF Mono",
+"buffer_font_size": 13,
+"buffer_line_height": { "custom": 1.4 }
+```
+
+Ghostty, in its config:
+
+```ini
+font-family = SF Mono
+font-size = 13
+```
+
+### Swift in Zed
+
+Xcode colors Swift from what the compiler knows: system types differ from project types, declarations from uses, and attributes from macros. Zed's Swift extension colors from the grammar alone and does not make those distinctions, so out of the box the theme can only get so close. [A change to the extension](https://github.com/zed-extensions/swift) adds captures for them, plus Markdown in doc comments and bold marks. Until it is merged, the fork can be installed as a dev extension:
+
+```sh
+git clone -b xcode-like-highlights https://github.com/DylanVann/swift.git
+```
+
+Then run `zed: extensions`, click **Install Dev Extension**, and pick the cloned folder.
+
 ## Matching Finder and the rest of macOS
 
-By default, macOS tints window backgrounds with a blur of your wallpaper, so Finder's gray drifts with the desktop and with whatever window sits behind it. Xcode's editor is opaque and never drifts, so the two can only agree by accident.
+Turn off **System Settings > Appearance > Allow wallpaper tinting in windows**. By default macOS tints window backgrounds with a blur of your wallpaper, so Finder's gray drifts with the desktop, while Xcode's editor is opaque and never drifts. With tinting off, window surfaces settle on fixed grays: in light mode the editor and Finder's file area are both white and Xcode's panels match Finder's sidebar, and in dark mode the theme lands on the same `#262626` as Xcode's editor and Finder's sidebar. This is separate from Reduce transparency; the Dock, menu bar, and sidebars keep their glass.
 
-Turn off **System Settings > Appearance > Allow wallpaper tinting in windows**. This is separate from Reduce transparency: the Dock, menu bar, and sidebars keep their glass, but window surfaces settle on fixed grays that no longer follow the wallpaper. With that off, on macOS 26, the surfaces measure like this in sRGB:
-
-| Surface | Dark | Light |
-|---|---|---|
-| Xcode editor, and this theme | `#262626` | `#ffffff` |
-| Finder sidebar | `#262626` | `#ededed` |
-| Xcode navigator and inspector | `#292929` | `#ededed` |
-| Finder toolbar and status bar | `#2a2a2a` | `#ffffff` |
-| Finder file area, icon and column view | `#1e1e1e` | `#ffffff` |
-| Finder list view rows, alternating | `#1e1e1e` and `#292929` | `#ffffff` and `#f4f5f5` |
-
-In light mode everything lines up: the editor and Finder's file area are both white, and Xcode's panels are the same `#ededed` as Finder's sidebar.
-
-In dark mode the theme lands on the same gray as Xcode's editor and Finder's sidebar, and the surrounding chrome in both apps sits within a few levels of each other. Finder's file area is darker on purpose. It uses Apple's dark-mode content background color, a fixed semantic color rather than a material, so no wallpaper or appearance setting moves it. This theme follows the window gray instead, because that is what Xcode's editor uses and what you look at all day. The gap between a Finder window's file list and an editor next to it is a consistent 8 levels, which reads as a normal inset rather than a mismatch.
+Finder's dark file area is darker, `#1e1e1e`, on purpose. It is Apple's fixed content background color, and the 8 levels between it and an editor beside it read as a normal inset. [MAPPING.md](MAPPING.md) has the measured value of every surface.
 
 ## Provenance
 
-**Light.** Background, foreground, and selection come straight from the `Default (Light).xccolortheme` bundled in Xcode.app (DVTUserInterfaceKit). The ANSI slots map Xcode's syntax roles: red is string, green is function, yellow is number and attribute, blue is declaration, magenta is keyword, cyan is system function, bright black is comment.
+**Syntax.** Xcode reports a foreground color for every token in its editor through the accessibility API. `tools/axcolors.swift` opens `tools/Probe.swift`, a Swift file that exercises every syntax role, and prints the sRGB components Xcode assigns to each one. `tools/build.py` turns those components into both theme files. Screen pixels agree with the extracted values to within one level in both modes. The Ghostty files document which role each ANSI slot carries.
 
-**Dark.** The Standard preset stores hues and intensities, not colors, so these values were measured from the rendered editor in sRGB: neutral `#262626` background, warm off-white text, and the tinted syntax colors. The ANSI slots map red to string, green to identifier, yellow to number, blue to link with bright blue as type, magenta to keyword with bright magenta as attribute and macro, cyan to system type and function, bright black to comment.
+**Surfaces.** Backgrounds, selection, current line, line numbers, and window chrome were measured from the screen, with captures converted from the display profile to sRGB. The Zed themes take their panels from Xcode's navigator and inspector and their title bar from Xcode's toolbar.
 
-The Zed themes extend the same values to the window chrome, with panels measured from Xcode's navigator and inspector.
-
-[MAPPING.md](MAPPING.md) traces every value to its source: a plist key, a screen measurement, or a chosen offset. The `xcode/` folder holds the `Default (Light).xccolortheme` the light theme is read from, plus two exported Standard recipes that record the dark preset's palette.
+[MAPPING.md](MAPPING.md) traces every value to its source: an extracted component, a screen measurement, or a chosen offset. `tools/ghostty_screenshot.py` regenerates the Ghostty palette images, `tools/zed_screenshot.sh` the Zed window captures, and `tools/hero/hero.sh` the desktop shots at the top, by compositing each window onto the stored wallpaper, all from the sample package in `tools/hero/Landmarks`. The terminal pane shows the same file through `bat` with the Xcode System bat theme.
 
 ## License
 
