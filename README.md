@@ -2,9 +2,9 @@
 
 Xcode 27's default colors for [Ghostty](https://ghostty.org), [Zed](https://zed.dev), and [bat](https://github.com/sharkdp/bat), so your editor, terminal, and Xcode all agree with each other and with the rest of macOS.
 
-![Xcode, Zed, Finder, and Ghostty, light](screenshots/hero-light.png)
+[![Xcode, Zed, Finder, and Ghostty, light](screenshots/hero-light.png)](screenshots/hero-light@2x.png)
 
-![Xcode, Zed, Finder, and Ghostty, dark](screenshots/hero-dark.png)
+[![Xcode, Zed, Finder, and Ghostty, dark](screenshots/hero-dark.png)](screenshots/hero-dark@2x.png)
 
 ## Why
 

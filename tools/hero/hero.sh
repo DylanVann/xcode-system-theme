@@ -1,6 +1,7 @@
 #!/bin/bash
 # Hero screenshots: Xcode, Zed, Finder, and Ghostty in a 2x2 grid over the wallpaper,
-# light and dark, written to screenshots/hero-{light,dark}.png.
+# light and dark, written to screenshots/hero-{light,dark}@2x.png at the display's native
+# resolution and screenshots/hero-{light,dark}.png at half size for the README.
 #
 #   tools/hero/hero.sh setup       open and size the four windows on tools/hero/Landmarks
 #   tools/hero/hero.sh capture     composite the shots from whatever is open (a few seconds)
@@ -8,7 +9,7 @@
 #   tools/hero/hero.sh             setup then capture
 #
 # Capture never reads the screen as a whole. Each app window is captured by id with its
-# shadow, scaled to 1x, and placed on the stored wallpaper at a grid position. Where the
+# shadow and placed on the stored 2x wallpaper at a grid position. Where the
 # windows sit on screen, what else is open, and the stacking order do not matter. The
 # shadow macOS draws around a window is a constant 23 px left and right, 16 px above,
 # and 30 px below at 1x, so placement is arithmetic. Needs Screen Recording and
@@ -94,11 +95,13 @@ capture_mode() {
   for k in 0 1 2 3; do
     line=$(win "${apps[$k]}" Landmarks); [ -n "$line" ] || { echo "no ${apps[$k]} window named Landmarks"; exit 1; }
     id=$(echo "$line" | cut -d'|' -f1 | tr -d ' ')
-    ( screencapture -x -l"$id" "$T/w$k.png" && magick "$T/w$k.png" -resize 50% "$T/w$k.png" 2>/dev/null ) &
+    screencapture -x -l"$id" "$T/w$k.png" &
   done
   wait
-  local args=(); for k in 0 1 2 3; do args+=( "$T/w$k.png" -geometry "+$(( xs[k] - SHADOW_X ))+$(( ys[k] - SHADOW_Y ))" -composite ); done
-  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -define png:compression-level=6 "$OUT/hero-$mode.png" 2>/dev/null; rm -rf "$T"; echo "wrote $OUT/hero-$mode.png" ) &
+  local args=(); for k in 0 1 2 3; do args+=( "$T/w$k.png" -geometry "+$(( (xs[k] - SHADOW_X) * 2 ))+$(( (ys[k] - SHADOW_Y) * 2 ))" -composite ); done
+  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -define png:compression-level=9 "$OUT/hero-$mode@2x.png" 2>/dev/null
+    magick "$OUT/hero-$mode@2x.png" -resize 50% -define png:compression-level=9 "$OUT/hero-$mode.png" 2>/dev/null
+    rm -rf "$T"; echo "wrote $OUT/hero-$mode@2x.png and $OUT/hero-$mode.png" ) &
 }
 
 capture() {
@@ -122,7 +125,7 @@ wallpaper() {
   for mode in light dark; do
     osascript -e "$SE to tell appearance preferences to set dark mode to $([ $mode = dark ] && echo true || echo false)"; sleep 6
     screencapture -x -l"$wp" /tmp/hero-wp.png
-    magick /tmp/hero-wp.png -crop 4112x2580+0+78 +repage -resize 50% -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -quality 92 "$ASSETS/wallpaper-$mode.jpg" 2>/dev/null
+    magick /tmp/hero-wp.png -crop 4112x2580+0+78 +repage -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -quality 92 "$ASSETS/wallpaper-$mode.jpg" 2>/dev/null
     echo "wrote $ASSETS/wallpaper-$mode.jpg"
   done
   osascript -e "$SE to tell appearance preferences to set dark mode to $was_dark"
