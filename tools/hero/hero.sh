@@ -96,19 +96,24 @@ capture_mode() {
   if [ "$(osascript -e "$SE to tell appearance preferences to get dark mode")" != "$dark" ]; then
     osascript -e "$SE to tell appearance preferences to set dark mode to $dark"; wait_for_appearance
   fi
-  # Each window is raised before its capture. A window that is behind another has no
-  # rendered backdrop for its glass toolbar, and captures with dither noise in its place.
-  local apps=(Xcode Zed Finder Ghostty) procs=(Xcode zed Finder ghostty) xs=($X0 $X1 $X0 $X1) ys=($Y0 $Y0 $Y1 $Y1) k line id
-  # Park the pointer in the gap between the windows, or a hover effect ends up in the shot.
-  $WM $(( X1 - 8 )) $(( Y1 + 39 - 24 )); sleep 0.5
-  local front; front=$(osascript -e "$SE to get name of first process whose frontmost is true")
+  # Every window must be unobscured when captured: a glass toolbar behind another window
+  # has no rendered backdrop and captures as dither noise. Only the terminal should look
+  # active, so the apps are activated in a rotation that leaves each of the others raised
+  # but inactive at its capture, and the Ghostty demo window is made key last.
+  local apps=(Xcode Zed Finder Ghostty) xs=($X0 $X1 $X0 $X1) ys=($Y0 $Y0 $Y1 $Y1) k line ids=()
   for k in 0 1 2 3; do
     line=$(win "${apps[$k]}" Landmarks); [ -n "$line" ] || { echo "no ${apps[$k]} window named Landmarks"; exit 1; }
-    id=$(echo "$line" | cut -d'|' -f1 | tr -d ' ')
-    osascript -e "$SE to set frontmost of process \"${procs[$k]}\" to true"; sleep 0.4
-    screencapture -x -l"$id" "$T/w$k.png"
+    ids+=( "$(echo "$line" | cut -d'|' -f1 | tr -d ' ')" )
   done
-  osascript -e "$SE to set frontmost of process \"$front\" to true" 2>/dev/null || true
+  local front front_win; front=$(osascript -e "$SE to get name of first process whose frontmost is true")
+  front_win=$(osascript -e "$SE to tell process \"$front\" to get name of window 1" 2>/dev/null)
+  activate() { osascript -e "$SE to set frontmost of process \"$1\" to true"; sleep 0.5; }
+  activate Xcode; activate zed;   screencapture -x -l"${ids[0]}" "$T/w0.png"
+  activate Finder;                screencapture -x -l"${ids[1]}" "$T/w1.png"
+  activate Xcode;                 screencapture -x -l"${ids[2]}" "$T/w2.png"
+  activate ghostty; osascript -e "$SE to tell process \"ghostty\" to perform action \"AXRaise\" of (first window whose name contains \"Landmarks\")" >/dev/null; sleep 0.5
+  screencapture -x -l"${ids[3]}" "$T/w3.png"
+  activate "$front"; [ -n "$front_win" ] && osascript -e "$SE to tell process \"$front\" to perform action \"AXRaise\" of (first window whose name is \"$front_win\")" >/dev/null 2>&1 || true
   # The shadow is wider for the active window than for an inactive one (112 by 76 px
   # versus 46 by 32 at 2x), so measure each capture's opaque box instead of assuming.
   local args=() box ox oy
