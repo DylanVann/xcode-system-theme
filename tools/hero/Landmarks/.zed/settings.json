@@ -1,3 +1,9 @@
 {
-  "file_scan_exclusions": ["**/.git", "**/.DS_Store", "**/.zed", "**/.build", "**/.swiftpm"]
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.DS_Store",
+    "**/.zed",
+    "**/.build",
+    "**/.swiftpm"
+  ]
 }

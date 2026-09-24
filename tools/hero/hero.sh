@@ -10,10 +10,9 @@
 #   tools/hero/hero.sh             setup then capture
 #
 # Capture never reads the screen as a whole. Each app window is captured by id with its
-# shadow and placed on the stored 2x wallpaper at a grid position. Where the
-# windows sit on screen, what else is open, and the stacking order do not matter. The
-# shadow macOS draws around a window is a constant 23 px left and right, 16 px above,
-# and 30 px below at 1x, so placement is arithmetic. Needs Screen Recording and
+# shadow and placed on the stored 2x wallpaper at a grid position, offset by the
+# shadow margin measured from the capture's alpha. Where the windows sit on screen,
+# what else is open, and the stacking order do not matter. Needs Screen Recording and
 # Accessibility access, the theme installed in Zed and Ghostty, the Swift extension with
 # Xcode-like highlights, SF Mono, the Xcode System bat theme, and wallpaper tinting off.
 # Setup sends one command to a new Ghostty window, so do not type while it runs.
@@ -27,7 +26,6 @@ SE='tell application "System Events"'
 # Window size in points, and the grid in points on the canvas, which is the screen
 # below the 39 pt menu bar. Screen bounds for setup are the canvas bounds plus 39.
 W=992; H=609; X0=24; X1=1040; Y0=24; Y1=657
-SHADOW_X=23; SHADOW_Y=16
 WL=/tmp/winlist
 [ "$WL" -nt "$S/tools/winlist.swift" ] || swiftc -O "$S/tools/winlist.swift" -o "$WL" 2>/dev/null
 WM=/tmp/warpmouse
@@ -111,15 +109,37 @@ capture_mode() {
     screencapture -x -l"$id" "$T/w$k.png"
   done
   osascript -e "$SE to set frontmost of process \"$front\" to true" 2>/dev/null || true
-  local args=(); for k in 0 1 2 3; do args+=( "$T/w$k.png" -geometry "+$(( (xs[k] - SHADOW_X) * 2 ))+$(( (ys[k] - SHADOW_Y) * 2 ))" -composite ); done
+  # The shadow is wider for the active window than for an inactive one (112 by 76 px
+  # versus 46 by 32 at 2x), so measure each capture's opaque box instead of assuming.
+  local args=() box ox oy
+  for k in 0 1 2 3; do
+    box=$(magick "$T/w$k.png" -alpha extract -threshold 99% -format "%@" info: 2>/dev/null)
+    ox=$(echo "$box" | sed -E 's/.*\+([0-9]+)\+([0-9]+)$/\1/'); oy=$(echo "$box" | sed -E 's/.*\+([0-9]+)\+([0-9]+)$/\2/')
+    args+=( "$T/w$k.png" -geometry "+$(( xs[k] * 2 - ox ))+$(( ys[k] * 2 - oy ))" -composite )
+  done
   ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -define png:compression-level=9 "$OUT/hero-$mode@2x.png" 2>/dev/null
     sips -s dpiWidth 144 -s dpiHeight 144 "$OUT/hero-$mode@2x.png" >/dev/null
     magick "$OUT/hero-$mode@2x.png" -resize 50% -define png:compression-level=9 "$OUT/hero-$mode.png" 2>/dev/null
     rm -rf "$T"; echo "wrote $OUT/hero-$mode@2x.png and $OUT/hero-$mode.png" ) &
 }
 
+ZED_SETTINGS=$HOME/.config/zed/settings.json
+blame_off() {
+  # Zed ignores git.inline_blame in project settings, so switch it off in the user's
+  # settings for the duration of the capture. Zed applies the change live.
+  [ -f "$ZED_SETTINGS" ] && ! grep -q '"inline_blame"' "$ZED_SETTINGS" || return 0
+  cp "$ZED_SETTINGS" /tmp/hero-zed-settings.json
+  python3 - "$ZED_SETTINGS" <<'PY'
+import sys; p=sys.argv[1]; s=open(p).read(); i=s.index("{")
+open(p,"w").write(s[:i+1]+'\n  "git": { "inline_blame": { "enabled": false } },'+s[i+1:])
+PY
+  trap 'cp /tmp/hero-zed-settings.json "$ZED_SETTINGS"' EXIT
+  sleep 3
+}
+
 capture() {
   mkdir -p "$OUT"
+  blame_off
   local show_all; show_all=$(defaults read com.apple.finder AppleShowAllFiles 2>/dev/null || echo 0)
   if [ "$show_all" = 1 ] || [ "$show_all" = true ]; then
     defaults write com.apple.finder AppleShowAllFiles -bool false; killall Finder; sleep 2; finder_window
