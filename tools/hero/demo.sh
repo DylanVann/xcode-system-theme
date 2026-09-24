@@ -1,7 +1,7 @@
 #!/bin/bash
 # Terminal content for the hero screenshot. bat's "ansi" theme colors through the
 # terminal palette; the Xcode System bat theme maps scopes to the palette slots.
-cd "$(dirname "$0")/Landmarks"
+cd "$(dirname "$0")/../../sample/Landmarks"
 clear
 printf '\e[1m$\e[0m swift build\n'; swift build 2>&1 | tail -1
 printf '\n\e[1m$\e[0m bat -r 7:24 Sources/Landmarks/Landmark.swift\n'
