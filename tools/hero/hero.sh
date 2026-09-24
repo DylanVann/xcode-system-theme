@@ -5,6 +5,7 @@
 #
 #   tools/hero/hero.sh setup       open and size the four windows on tools/hero/Landmarks
 #   tools/hero/hero.sh capture     composite the shots from whatever is open (a few seconds)
+#   tools/hero/hero.sh ghostty     reopen only the Ghostty demo window
 #   tools/hero/hero.sh wallpaper   recapture tools/hero/wallpaper-{light,dark}.jpg; rarely needed
 #   tools/hero/hero.sh             setup then capture
 #
@@ -50,6 +51,13 @@ setup() {
   for i in 1 2; do case "$(win Zed Landmarks)" in *Landmark.swift*) break;; esac; osascript -e "$SE to tell process \"zed\" to tell menu bar 1 to tell menu bar item \"File\" to tell menu 1 to click (first menu item whose name is \"Close Editor\")" >/dev/null 2>&1 || true; sleep 2; done
   /Applications/Zed.app/Contents/MacOS/cli "$FILE:1:1" >/dev/null 2>&1 || true; sleep 2
   osascript -e "$SE to tell process \"zed\" to set position of window 1 to {$X1, $((Y0+39))}" -e "$SE to tell process \"zed\" to set size of window 1 to {$W, $H}"
+  ghostty_window
+  echo "[finder]"; finder_window
+}
+
+is_dark() { [ "$(osascript -e "$SE to tell appearance preferences to get dark mode")" = true ]; }
+
+ghostty_window() {
   echo "[ghostty]"
   osascript -e "$SE to tell process \"ghostty\" to click (first button whose subrole is \"AXCloseButton\") of (every window whose name contains \"Landmarks\")" >/dev/null 2>&1 || true; sleep 1
   osascript -e "$SE to tell process \"ghostty\" to tell menu bar 1 to tell menu bar item \"File\" to tell menu 1 to click menu item \"New Window\"" >/dev/null; sleep 2
@@ -59,10 +67,7 @@ setup() {
   osascript -e "$SE to keystroke \"cd $PKG; clear; bash ../demo.sh\"" -e "$SE to key code 36"; sleep 12
   osascript -e "$SE to tell process \"ghostty\" to set position of window 1 to {$X1, $((Y1+39))}" -e "$SE to tell process \"ghostty\" to set size of window 1 to {$W, $H}"
   rm -rf "$PKG/.build"
-  echo "[finder]"; finder_window
 }
-
-is_dark() { [ "$(osascript -e "$SE to tell appearance preferences to get dark mode")" = true ]; }
 
 finder_window() {
   osascript -e "tell application \"Finder\" to close every Finder window" >/dev/null 2>&1 || true
@@ -91,15 +96,20 @@ capture_mode() {
   if [ "$(osascript -e "$SE to tell appearance preferences to get dark mode")" != "$dark" ]; then
     osascript -e "$SE to tell appearance preferences to set dark mode to $dark"; wait_for_appearance
   fi
-  local apps=(Xcode Zed Finder Ghostty) xs=($X0 $X1 $X0 $X1) ys=($Y0 $Y0 $Y1 $Y1) k line id
+  # Each window is raised before its capture. A window that is behind another has no
+  # rendered backdrop for its glass toolbar, and captures with dither noise in its place.
+  local apps=(Xcode Zed Finder Ghostty) procs=(Xcode zed Finder ghostty) xs=($X0 $X1 $X0 $X1) ys=($Y0 $Y0 $Y1 $Y1) k line id
+  local front; front=$(osascript -e "$SE to get name of first process whose frontmost is true")
   for k in 0 1 2 3; do
     line=$(win "${apps[$k]}" Landmarks); [ -n "$line" ] || { echo "no ${apps[$k]} window named Landmarks"; exit 1; }
     id=$(echo "$line" | cut -d'|' -f1 | tr -d ' ')
-    screencapture -x -l"$id" "$T/w$k.png" &
+    osascript -e "$SE to set frontmost of process \"${procs[$k]}\" to true"; sleep 0.4
+    screencapture -x -l"$id" "$T/w$k.png"
   done
-  wait
+  osascript -e "$SE to set frontmost of process \"$front\" to true" 2>/dev/null || true
   local args=(); for k in 0 1 2 3; do args+=( "$T/w$k.png" -geometry "+$(( (xs[k] - SHADOW_X) * 2 ))+$(( (ys[k] - SHADOW_Y) * 2 ))" -composite ); done
-  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -units PixelsPerInch -density 144 -define png:compression-level=9 "$OUT/hero-$mode@2x.png" 2>/dev/null
+  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -define png:compression-level=9 "$OUT/hero-$mode@2x.png" 2>/dev/null
+    sips -s dpiWidth 144 -s dpiHeight 144 "$OUT/hero-$mode@2x.png" >/dev/null
     magick "$OUT/hero-$mode@2x.png" -resize 50% -define png:compression-level=9 "$OUT/hero-$mode.png" 2>/dev/null
     rm -rf "$T"; echo "wrote $OUT/hero-$mode@2x.png and $OUT/hero-$mode.png" ) &
 }
@@ -134,7 +144,8 @@ wallpaper() {
 case "${1:-all}" in
   setup) setup ;;
   capture) capture ;;
+  ghostty) ghostty_window ;;
   wallpaper) wallpaper ;;
   all) setup; capture; defaults write com.apple.finder AppleShowAllFiles -bool true; killall Finder ;;
-  *) echo "usage: $0 [setup|capture|wallpaper]"; exit 1 ;;
+  *) echo "usage: $0 [setup|capture|ghostty|wallpaper]"; exit 1 ;;
 esac
