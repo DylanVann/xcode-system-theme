@@ -72,7 +72,9 @@ In dark mode the theme lands on the same gray as Xcode's editor and Finder's sid
 
 **Dark.** The Standard preset stores hues and intensities, not colors, so these values were measured from the rendered editor in sRGB: neutral `#262626` background, warm off-white text, and the tinted syntax colors. The ANSI slots map red to string, green to identifier, yellow to number, blue to link with bright blue as type, magenta to keyword with bright magenta as attribute and macro, cyan to system type and function, bright black to comment.
 
-The Zed themes extend the same values to the window chrome, with panels, tabs, and borders picked to sit next to Xcode's navigator and inspector.
+The Zed themes extend the same values to the window chrome, with panels measured from Xcode's navigator and inspector.
+
+[MAPPING.md](MAPPING.md) traces every value to its source: a plist key, a screen measurement, or a chosen offset. The `xcode/` folder holds the `Default (Light).xccolortheme` the light theme is read from, plus two exported Standard recipes that record the dark preset's palette.
 
 ## License
 
