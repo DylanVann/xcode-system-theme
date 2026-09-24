@@ -137,11 +137,11 @@ There is no visible separator line between Xcode's navigator and editor in eithe
 | Zed keys | Light | Dark | Kind | Note |
 |---|---|---|---|---|
 | `background`, `surface.background`, `panel.background`, `tab_bar.background`, `tab.inactive_background`, `element.background`, `element.disabled`, `editor.subheader.background` | `#ededed` | `#292929` | measured | Xcode's navigator. |
-| `title_bar.background`, `title_bar.inactive_background`, `status_bar.background` | `#ffffff` | `#2f2f2f` | measured | Xcode's toolbar and title bar. Was the panel gray. |
+| `title_bar.background`, `title_bar.inactive_background`, `status_bar.background` | `#ededed` | `#292929` | measured | The panel gray, so the sidebar, title bar, and status bar form one surface around the editor, as Xcode's navigator and toolbar area does around its editor. Xcode's own toolbar measures `#ffffff` and `#2f2f2f`; using it gave Zed a distinct band across the top that read as clutter. |
 | `element.selected`, `ghost_element.selected` | `#d7d7d7` | `#474747` | measured | Xcode's navigator selected row. |
 | `elevated_surface.background` | `#ffffff` | `#383838` | chosen | Popovers. Light uses the editor white; dark is the old `#2e2e2e` moved up 10. |
-| `border`, `pane_group.border`, `panel.indent_guide` | `#d9d9d9` | `#3f3f3f` | chosen | Light: the old plist border `#e1e1e1` moved down 8. Dark: `#353535` moved up 10. Dark also uses this for `element.hover` and `ghost_element.hover`. |
-| `border.variant`, `border.disabled`, `scrollbar.track.border` | `#e4e4e4` | `#353535` | chosen | Light: `#ececec` moved down 8. Dark: `#2b2b2b` moved up 10. |
+| `border`, `border.variant`, `border.disabled`, `pane_group.border`, `scrollbar.track.border` | transparent | transparent | chosen | Xcode draws no separator lines between its navigator, toolbar, and editor; the surfaces meet. Zed's structural borders are transparent for the same effect. Focused and selected borders keep the selection color. |
+| `panel.indent_guide` | `#d9d9d9` | `#3f3f3f` | chosen | Light: the old plist border `#e1e1e1` moved down 8. Dark: `#353535` moved up 10. Dark also uses this for `element.hover` and `ghost_element.hover`. |
 | `element.hover`, `ghost_element.hover` | `#e0e0e0` | `#3f3f3f` | chosen | Light: `#e8e8e8` moved down 8. |
 | `element.active`, `ghost_element.active` | `#d0d0d0` | `#515151` | chosen | Light: `#d8d8d8` moved down 8. Dark: `#474747` moved up 10, also used for `panel.indent_guide_hover` and `panel.indent_guide_active`. |
 
