@@ -100,7 +100,7 @@ font-size = 13
 
 ### Swift in Zed
 
-Xcode colors Swift from what the compiler knows: system types differ from project types, declarations from uses, and attributes from macros. Zed's Swift extension colors from the grammar alone and does not make those distinctions, so out of the box the theme can only get so close. [A change to the extension](https://github.com/zed-extensions/swift) adds captures for them, plus Markdown in doc comments and bold marks. Until it is merged, the fork can be installed as a dev extension:
+Xcode colors Swift from what the compiler knows: system types differ from project types, declarations from uses, and attributes from macros. Zed's Swift extension colors from the grammar alone and does not make those distinctions, so out of the box the theme can only get so close. [A change to the extension](https://github.com/zed-extensions/swift/pull/85) adds captures for them, plus Markdown in doc comments and bold marks. Until it is merged, the fork can be installed as a dev extension:
 
 ```sh
 git clone -b xcode-like-highlights https://github.com/DylanVann/swift.git
