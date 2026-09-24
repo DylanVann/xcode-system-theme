@@ -99,7 +99,7 @@ capture_mode() {
   done
   wait
   local args=(); for k in 0 1 2 3; do args+=( "$T/w$k.png" -geometry "+$(( (xs[k] - SHADOW_X) * 2 ))+$(( (ys[k] - SHADOW_Y) * 2 ))" -composite ); done
-  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -define png:compression-level=9 "$OUT/hero-$mode@2x.png" 2>/dev/null
+  ( magick "$ASSETS/wallpaper-$mode.jpg" "${args[@]}" -profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc" -strip -units PixelsPerInch -density 144 -define png:compression-level=9 "$OUT/hero-$mode@2x.png" 2>/dev/null
     magick "$OUT/hero-$mode@2x.png" -resize 50% -define png:compression-level=9 "$OUT/hero-$mode.png" 2>/dev/null
     rm -rf "$T"; echo "wrote $OUT/hero-$mode@2x.png and $OUT/hero-$mode.png" ) &
 }
