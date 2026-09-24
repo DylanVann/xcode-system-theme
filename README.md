@@ -8,7 +8,15 @@ Xcode 27's default colors for [Ghostty](https://ghostty.org), [Zed](https://zed.
 
 ## Why
 
-Xcode, Finder, your editor, and your terminal each pick a slightly different near-black, and side by side it shows. This theme uses Xcode 27's exact background, `#262626`, and its syntax colors, so every window you code in reads as one surface. Light mode gets the same treatment.
+Xcode, Finder, your editor, and your terminal each pick a slightly different near-black, and side by side it shows. Out of the box, with Zed's and Ghostty's default themes:
+
+[![Xcode, Zed, Ghostty, and Finder with their default dark themes](screenshots/before-dark.png)](screenshots/before-dark@2x.png)
+
+With this theme, every window you code in reads as one surface:
+
+[![The same windows with Xcode System](screenshots/cascade-dark.png)](screenshots/cascade-dark@2x.png)
+
+The theme uses Xcode 27's exact background and syntax colors. Light mode gets the same treatment.
 
 Other Xcode ports convert the `.xccolortheme` files Xcode has bundled since Xcode 11. Xcode 27 no longer draws those; its default is a procedural recipe whose resolved colors are not exported anywhere. This theme reads them out of Xcode's running editor instead.
 
